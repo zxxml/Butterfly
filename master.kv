@@ -1,0 +1,103 @@
+#:kivy 1.10.1
+
+<MasterButton>:
+    size_hint: (1 / 3, 1 / 3)
+    background_color: (0, 0, 0, 0)
+    on_press: self.background_color = (0, 0, 0, 0.5)
+    on_release: self.background_color = (0, 0, 0, 0)
+
+<MasterButtonImage@Image>:
+    size: self.parent.size
+    pos: self.parent.pos
+
+<MasterLeftStick@RelativeLayout>:
+    MasterButton:
+        name: "up_btn"
+        pos_hint: {"center_x": 0.5, "top": 1}
+        MasterButtonImage:
+            source: "image/left_stick/up_btn.png"
+    MasterButton:
+        name: "down_btn"
+        pos_hint: {"center_x": 0.5, "bottom": 1}
+        MasterButtonImage:
+            source: "image/left_stick/down_btn.png"
+    MasterButton:
+        name: "left_btn"
+        pos_hint: {"left": 1, "center_y": 0.5}
+        MasterButtonImage:
+            source: "image/left_stick/left_btn.png"
+    MasterButton:
+        name: "right_btn"
+        pos_hint: {"right": 1, "center_y": 0.5}
+        MasterButtonImage:
+            source: "image/left_stick/right_btn.png"
+
+<MasterRightStick@RelativeLayout>:
+    MasterButton:
+        name: "up_btn"
+        pos_hint: {"center_x": 0.5, "top": 1}
+        MasterButtonImage:
+            source: "image/right_stick/up_btn.png"
+    MasterButton:
+        name: "down_btn"
+        pos_hint: {"center_x": 0.5, "bottom": 1}
+        MasterButtonImage:
+            source: "image/right_stick/down_btn.png"
+    MasterButton:
+        name: "left_btn"
+        pos_hint: {"left": 1, "center_y": 0.5}
+        MasterButtonImage:
+            source: "image/right_stick/left_btn.png"
+    MasterButton:
+        name: "right_btn"
+        pos_hint: {"right": 1, "center_y": 0.5}
+        MasterButtonImage:
+            source: "image/right_stick/right_btn.png"
+
+<MasterABXY@RelativeLayout>:
+    MasterButton:
+        name: "a_btn"
+        pos_hint: {"center_x": 0.5, "bottom": 1}
+        MasterButtonImage:
+            source: "image/chirpy_chirps/aim_btn.png"
+    MasterButton:
+        name: "b_btn"
+        pos_hint: {"right": 1, "center_y": 0.5}
+        MasterButtonImage:
+            source: "image/chirpy_chirps/speak_btn.png"
+    MasterButton:
+        name: "x_btn"
+        pos_hint: {"left": 1, "center_y": 0.5}
+        MasterButtonImage:
+            source: "image/chirpy_chirps/save_btn.png"
+    MasterButton:
+        name: "y_btn"
+        pos_hint: {"center_x": 0.5, "top": 1}
+        MasterButtonImage:
+            source: "image/chirpy_chirps/refresh_btn.png"
+
+<MasterBox@BoxLayout>:
+    padding: 20
+    size_hint: (0.35 * self.parent.height / self.parent.width, 0.35)
+    on_size: self.size_hint = (0.4 * self.parent.height / self.parent.width, 0.4)
+
+<MasterPanel>:
+    RelativeLayout:
+        size: self.parent.size
+        on_size: self.size = self.parent.size
+        Image:
+            id: image
+            size: self.parent.size
+            on_size: self.size = self.parent.size
+        MasterBox:
+            pos_hint: {"left": 1, "bottom": 1}
+            MasterLeftStick:
+                name: "left_stick"
+        MasterBox:
+            pos_hint: {"right": 1, "bottom": 1}
+            MasterRightStick:
+                name: "right_stick"
+        MasterBox:
+            pos_hint: {"right": 1, "top": 1}
+            MasterABXY:
+                name: "chirpy_chirps"
