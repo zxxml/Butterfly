@@ -69,7 +69,7 @@ class Slave(Client, config.Slave):
             with sd.OutputStream(sampling_rate, block_size, channels=channel_num) as output_stream:
                 while True:
                     msg = self.audio_queue.get()
-                    audio = np.fromstring(msg.stream, np.float32)
+                    audio = np.fromstring(msg.value, np.float32)
                     output_stream.write(audio)
 
         handle_audio_thread = Thread(target=_handle_audio_thread)

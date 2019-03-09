@@ -24,57 +24,32 @@ from utiliy import PausableThread, SharedVariable, undead_curse
 class MasterButton(Button, config.MasterButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.master = App.get_running_app().master
-        self.shared_image = App.get_running_app().shared_image
+        self.app = App.get_running_app()
+
+    def on_press(self):
+        if self.parent.name in ('left_stick', 'right_stick'):
+            action = MasterButton.action_table[self.parent.name]
+            detail = MasterButton.detail_table[self.name]
+            value = MasterButton.value_table[self.name]
+            self.app.send_msg(action, detail, value)
+        elif self.parent.name == 'chirpy_chirps':
+            button_id = MasterButton.button_table[self.name]
+            self.app.on_joy_button_down(None, None, button_id)
+
+    def on_release(self):
+        if self.parent.name in ('left_stick', 'right_stick'):
+            action = MasterButton.action_table[self.parent.name]
+            detail = MasterButton.detail_table[self.name]
+            self.app.send_msg(action, detail, 0)
+        elif self.parent.name == 'chirpy_chirps':
+            button_id = MasterButton.button_table[self.name]
+            self.app.on_joy_button_up(None, None, button_id)
 
     def on_touch_down(self, touch):
         if touch.is_triple_tap:
             self.disabled = not self.disabled
             self.opacity = 1 - self.opacity
         super().on_touch_down(touch)
-
-    def on_press(self):
-        if self.parent.name in ('left_stick', 'right_stick'):
-            action = MasterButton.action_table[self.parent.name]
-            detail = MasterButton.detail_table[self.name]
-            self.on_stick_press(action, detail)
-        elif self.parent.name == 'chirpy_chirps':
-            self.on_chirpy_chirps_press()
-
-    def on_stick_press(self, action, detail):
-        msg = Message(action, detail, b'')
-        self.master.send_queue.put(msg)
-
-    def on_chirpy_chirps_press(self):
-        if self.name == 'b_btn':
-            self.master.record_audio_thread.resume()
-        elif self.name == 'x_btn':
-            self.save_image()
-        elif self.name == 'y_btn':
-            self.on_stick_release('vehicle')
-            self.on_stick_release('camera')
-
-    def on_release(self):
-        if self.parent.name in ('left_stick', 'right_stick'):
-            action = MasterButton.action_table[self.parent.name]
-            self.on_stick_release(action)
-        elif self.parent.name == 'chirpy_chirps':
-            self.on_chirpy_chirps_release()
-
-    def on_stick_release(self, action):
-        msg = Message(action, 'stop', b'')
-        self.master.send_queue.put(msg)
-
-    def on_chirpy_chirps_release(self):
-        if self.name == 'b_btn':
-            self.master.record_audio_thread.pause()
-
-    def save_image(self):
-        if not self.shared_image:
-            return None
-        image = self.shared_image.get()[-1]
-        now = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
-        cv2.imwrite('{}.jpg'.format(now), image)
 
 
 class MasterPanel(Widget):
@@ -95,24 +70,63 @@ class MasterPanel(Widget):
         self.ids.image.texture = texture
 
 
-class MasterWindow(App, config.MasterWindow):
+class MasterApp(App, config.MasterApp):
     Builder.load_file('master.kv')
-    Window.size = (config.MasterWindow.width, config.MasterWindow.height)
+    Window.size = (config.MasterApp.width, config.MasterApp.height)
 
     def __init__(self, master, **kwargs):
         super().__init__(**kwargs)
         self.master = master
         self.shared_image = SharedVariable()
         self.panel = MasterPanel()
-        Clock.schedule_interval(self.update_image, MasterWindow.interval)
+        Window.bind(on_joy_axis=self.on_joy_axis)
+        Window.bind(on_joy_button_down=self.on_joy_button_down)
+        Window.bind(on_joy_button_up=self.on_joy_button_up)
+
+    def update_image(self, _interval):
+        if not self.shared_image:
+            return None
+        return self.panel.update_image(*self.shared_image.get())
+
+    def save_image(self):
+        if not self.shared_image:
+            return None
+        image = self.shared_image.get()[-1]
+        now = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
+        cv2.imwrite('{}.jpg'.format(now), image)
+
+    def send_msg(self, action, detail, value):
+        msg = Message(action, detail, value)
+        self.master.send_queue.put(msg)
 
     def build(self):
         return self.panel
 
-    def update_image(self, _):
-        if not self.shared_image:
-            return None
-        return self.panel.update_image(*self.shared_image.get())
+    def run(self):
+        Clock.schedule_interval(self.update_image, MasterApp.interval)
+        super().run()
+
+    def on_joy_axis(self, _win, _stick_id, axis_id, value):
+        if axis_id in (0, 1, 3, 4):
+            action = MasterApp.action_table[axis_id]
+            detail = MasterApp.detail_table[axis_id]
+            value = 0 if abs(value) < MasterApp.value_threshold else value
+            self.send_msg(action, detail, value)
+
+    def on_joy_button_down(self, _win, _stick_id, button_id):
+        if button_id == 1:
+            self.master.record_audio_thread.resume()
+        elif button_id == 2:
+            self.save_image()
+        elif button_id == 3:
+            self.send_msg('vehicle', 'vertical', 0)
+            self.send_msg('vehicle', 'horizontal', 0)
+            self.send_msg('camera', 'vertical', 0)
+            self.send_msg('camera', 'horizontal', 0)
+
+    def on_joy_button_up(self, _win, _stick_id, button_id):
+        if button_id == 1:
+            self.master.record_audio_thread.pause()
 
 
 class Master(Client, config.Master):
@@ -123,7 +137,7 @@ class Master(Client, config.Master):
     def __init__(self, host, port, passwd, ssl_context=None):
         super().__init__(host, port, passwd, 'master', ssl_context)
         self.record_audio_thread = self.handle_record_audio_thread()
-        self.window = MasterWindow(self)
+        self.window = MasterApp(self)
 
     async def recv_task(self, conn):
         while True:
@@ -131,7 +145,7 @@ class Master(Client, config.Master):
             msg = Message.unpack(msg)
             if msg.action == 'image':
                 width, height = msg.unpack_detail()
-                image = np.fromstring(msg.stream, np.uint8)
+                image = np.fromstring(msg.value, np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 self.window.shared_image.put((width, height, image))
 
