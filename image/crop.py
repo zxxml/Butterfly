@@ -15,6 +15,7 @@ def crop_bounding_box(image):
 
 
 def main(image_path, output_path=None):
+    """裁剪图片的最小包围盒。"""
     image = Image.open(image_path)
     image = image.convert('RGBA')
     x, y, width, height = crop_bounding_box(image)
