@@ -6,12 +6,12 @@ from asyncio import ensure_future
 import websockets
 from websockets import ConnectionClosed
 
-import config
+from config import Client as _Client
 from message import Message, MessageQueue
 from utiliy import undead_curse
 
 
-class Client(config.Client):
+class Client(_Client):
     """客户端的基本形态，这个基本形态将帮助管理一部分琐事，例如：断线重连。"""
 
     @staticmethod
@@ -37,7 +37,7 @@ class Client(config.Client):
             msg = await self.send_queue.async_get()
             await conn.send(msg.pack())
 
-    @undead_curse(config.Client.restart_interval, ConnectionClosed, OSError)
+    @undead_curse(_Client.restart_interval, ConnectionClosed, OSError)
     def mainloop(self, new_loop=False):
         async def _mainloop():
             self.recv_queue = MessageQueue()

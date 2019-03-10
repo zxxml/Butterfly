@@ -15,13 +15,15 @@ from kivy.lang import Builder
 from kivy.uix.button import Button
 from kivy.uix.widget import Widget
 
-import config
 from client import Client
+from config import Master as _Master
+from config import MasterApp as _MasterApp
+from config import MasterButton as _MasterButton
 from message import Message
 from utiliy import PausableThread, SharedVariable, undead_curse
 
 
-class MasterButton(Button, config.MasterButton):
+class MasterButton(Button, _MasterButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.app = App.get_running_app()
@@ -64,15 +66,13 @@ class MasterPanel(Widget):
         image = cv2.resize(image, (width, height))
         # noinspection PyArgumentList
         texture = Texture.create(size=(width, height), colorfmt='bgr')
-        texture.flip_vertical()
-        texture.flip_horizontal()
         texture.blit_buffer(image.tobytes(), colorfmt='bgr')
         self.ids.image.texture = texture
 
 
-class MasterApp(App, config.MasterApp):
+class MasterApp(App, _MasterApp):
     Builder.load_file('master.kv')
-    Window.size = (config.MasterApp.width, config.MasterApp.height)
+    Window.size = (_MasterApp.width, _MasterApp.height)
 
     def __init__(self, master, **kwargs):
         super().__init__(**kwargs)
@@ -103,14 +103,13 @@ class MasterApp(App, config.MasterApp):
         return self.panel
 
     def run(self):
-        Clock.schedule_interval(self.update_image, MasterApp.interval)
+        Clock.schedule_interval(self.update_image, MasterApp.image_interval)
         super().run()
 
     def on_joy_axis(self, _win, _stick_id, axis_id, value):
         if axis_id in (0, 1, 3, 4):
             action = MasterApp.action_table[axis_id]
             detail = MasterApp.detail_table[axis_id]
-            value = 0 if abs(value) < MasterApp.value_threshold else value
             self.send_msg(action, detail, value)
 
     def on_joy_button_down(self, _win, _stick_id, button_id):
@@ -129,7 +128,7 @@ class MasterApp(App, config.MasterApp):
             self.master.record_audio_thread.pause()
 
 
-class Master(Client, config.Master):
+class Master(Client, _Master):
     """主机是从机的上位机。
     主机将不间断地接收从机发送的摄像头回传报文，并显示在屏幕上。
     """
@@ -155,22 +154,23 @@ class Master(Client, config.Master):
         return mainloop_thread
 
     def handle_record_audio_thread(self):
+        kwargs = {'samplerate': Master.sampling_rate, 'blocksize': Master.block_size, 'channels': Master.channel_num}
+        detail = '{0}x{1}x{2}'.format(Master.sampling_rate, Master.block_size, Master.channel_num)
+
         @undead_curse(Master.restart_interval, sd.PortAudioError)
         def _handle_record_audio_thread(signal):
-            args = (Master.sampling_rate, Master.block_size)
-            kwargs = {'channels': Master.channel_num}
-            with sd.InputStream(*args, **kwargs) as input_stream:
+            with sd.InputStream(**kwargs) as input_stream:
                 while True:
                     signal.wait()
                     audio = input_stream.read(Master.block_size)
-                    msg = Message('speaker', Master.detail, audio[0].tobytes())
+                    msg = Message('speaker', detail, audio[0].tobytes())
                     self.send_queue.put(msg)
 
         record_audio_thread = PausableThread(target=_handle_record_audio_thread)
         record_audio_thread.setDaemon(True)
         return record_audio_thread
 
-    def mainloop(self, **kwargs):
+    def mainloop(self):
         self.handle_mainloop_thread().start()
         self.record_audio_thread.start()
         self.window.run()

@@ -7,13 +7,13 @@ import cv2
 import numpy as np
 import sounddevice as sd
 
-import config
 from client import Client
+from config import Slave as _Slave
 from message import Message, MessageQueue
 from utiliy import undead_curse
 
 
-class Slave(Client, config.Slave):
+class Slave(Client, _Slave):
     """从机是载具控制器的上位机。
     从机将不间断地向服务器发送摄像头回传报文。
     从机接收到载具控制报文或摄像头控制报文时，该报文将被转发给载具控制器。
@@ -38,13 +38,16 @@ class Slave(Client, config.Slave):
         @undead_curse(Slave.restart_interval, cv2.error)
         def _handle_image_thread():
             camera = cv2.VideoCapture(0)
-            camera.set(3, Slave.width)
-            camera.set(4, Slave.height)
+            camera.set(3, Slave.image_width)
+            camera.set(4, Slave.image_height)
             while True:
-                time.sleep(Slave.interval)
+                time.sleep(Slave.image_interval)
                 ret, image = camera.read()
-                ret, image = cv2.imencode('.jpg', image, Slave.quality)
-                msg = Message('image', Slave.detail, image.tobytes())
+                image = cv2.flip(image, 0)
+                image = cv2.flip(image, 1)
+                detail = '{1}x{0}'.format(*image.shape[0:2])
+                ret, image = cv2.imencode('.jpg', image, Slave.image_quality)
+                msg = Message('image', detail, image.tobytes())
                 self.send_queue.put(msg)
 
         handle_image_thread = Thread(target=_handle_image_thread)
@@ -76,11 +79,11 @@ class Slave(Client, config.Slave):
         handle_audio_thread.setDaemon(True)
         return handle_audio_thread
 
-    def mainloop(self, new_loop=False):
+    def mainloop(self, **kwargs):
         self.handle_image_thread().start()
         self.handle_serial_thread().start()
         self.handle_audio_thread().start()
-        super().mainloop(new_loop)
+        super().mainloop(**kwargs)
 
 
 if __name__ == '__main__':

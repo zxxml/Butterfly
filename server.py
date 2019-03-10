@@ -8,11 +8,11 @@ from urllib.parse import parse_qs, urlparse
 import websockets
 from websockets import ConnectionClosed
 
-import config
+from config import Server as _Server
 from message import MessageQueue
 
 
-class Server(config.Server):
+class Server(_Server):
     """（中转）服务器只负责端到端的报文中转。
     主机和从机可以单独地连接到服务器，地址格式为ws(s)://<host>:<port>/?passwd=<passwd>&client_type=<client_type>。
     以主机为例，当主机连接到服务器后，它便独占主机位，服务器将拒绝其他客户端以主机身份发起连接；
@@ -77,13 +77,13 @@ class Server(config.Server):
             msg = await send_queue.async_get()
             await conn.send(msg)
 
-    def mainloop(self, **kwargs):
+    def mainloop(self, new_loop=False, **kwargs):
         kwargs.setdefault('ssl', self.ssl_context)
         kwargs.setdefault('process_request', self.process_request())
         start_server = websockets.serve(self.server_handler(), self.host, self.port, **kwargs)
-        mainloop = asyncio.get_event_loop()
-        mainloop.run_until_complete(start_server)
-        mainloop.run_forever()
+        loop = asyncio.new_event_loop() if new_loop else asyncio.get_event_loop()
+        loop.run_until_complete(start_server)
+        loop.run_forever()
 
 
 if __name__ == '__main__':

@@ -16,12 +16,11 @@ class Message:
     当需要解包一个报文时，可以使用报文的unpack(msg)方法，唯一的参数是待解包的数据；
     当需要解包一个报文的detail时，可以直接使用它的unpack_detail()方法。
     报文的内容如下所示：
-    测试报文：test ping/pong ping/pong
-    摄像头回传报文：image <分辨率>（形如640x480） 视频帧
-    麦克风回传报文：audio <采样率>x<块大小>x<通道数> 音频帧
+    摄像头回传报文：image <分辨率>（形如640x480） <视频帧>
+    麦克风回传报文：audio <采样率>x<块大小>x<通道数> <音频帧>
     载具控制报文：vehicle vertical/horizontal <value>
     摄像头控制报文：camera vertical/horizontal <value>
-    扬声器控制报文：speaker <采样率>x<块大小>x<通道数> 音频帧
+    扬声器控制报文：speaker <采样率>x<块大小>x<通道数> <音频帧>
     水弹枪控制报文：minigun vertical/horizontal <value>
     """
     action: str
@@ -29,34 +28,26 @@ class Message:
     value: Union[bytes, int]
 
     def __str__(self):
-        if self.action in ('test', 'image', 'audio', 'speaker'):
-            return '{0} {1}'.format(self.action, self.detail)
-        return '{0} {1} {2}'.format(self.action, self.detail, self.value)
+        value = hash(self.value) if isinstance(self.value, bytes) else self.value
+        return '{0} {1} {2}'.format(self.action, self.detail, value)
 
     def __repr__(self):
-        if self.action in ('test', 'image', 'audio', 'speaker'):
-            return '{0} {1}\n'.format(self.action, self.detail)
-        return '{0} {1} {2}\n'.format(self.action, self.detail, self.value)
+        value = hash(self.value) if isinstance(self.value, bytes) else self.value
+        return '{0} {1} {2}\n'.format(self.action, self.detail, value)
 
     def pack(self):
-        value = base64.b64encode(self.value) if Message.need_base64(self.action) else self.value
+        value = base64.b64encode(self.value) if isinstance(self.value, bytes) else self.value
         return json.dumps((self.action, self.detail, value))
 
     @staticmethod
     def unpack(msg):
         action, detail, value = json.loads(msg)
-        value = base64.b64decode(value) if Message.need_base64(action) else value
+        value = base64.b64decode(value) if isinstance(value, str) else value
         return Message(action, detail, value)
 
     def unpack_detail(self):
         """当需要扩展报文时，请保证unpack_detail()方法的有效性。"""
-        if self.action in ('image', 'audio', 'speaker'):
-            return (int(each) for each in self.detail.split('x'))
-        return self.detail
-
-    @staticmethod
-    def need_base64(action):
-        return True if action in ('test', 'image', 'audio', 'speaker') else False
+        return (int(each) for each in self.detail.split('x')) if isinstance(self.value, bytes) else self.detail
 
 
 class MessageQueue(janus.Queue):
