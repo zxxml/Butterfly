@@ -19,6 +19,7 @@ class Client(BlackBox):
     @async_new_game_plus
     async def handle_recv_task(self, socket):
         item = await socket.recv()
+        print(item)
         await self.recv_queue.async_put(item)
 
     @async_new_game_plus
@@ -36,9 +37,3 @@ class Client(BlackBox):
     def run(self):
         super().run()
         self.loop.run_until_complete(self.mainloop())
-
-
-if __name__ == '__main__':
-    test_config = ClientConfig('localhost', 8080, '123456', 0, 0)
-    test_client = Client(test_config)
-    test_client.start()
