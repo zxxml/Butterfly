@@ -1,0 +1,20 @@
+dataclasses==0.6
+janus==0.4.0
+numpy==1.16.1
+opencv-python==4.0.0.21
+pyserial==3.4
+ujson==1.35
+urllib3==1.24.1
+websockets==7.0
+
+docutils==0.14
+kivy.deps.glew==0.1.10
+kivy.deps.sdl2==0.1.18
+pypiwin32==223
+Kivy==1.10.1
+Pygments==2.3.1
+
+# 对于Debian/Ubuntu用户，可以直接使用apt安装Kivy
+# sudo add-apt-repository ppa:kivy-team/kivy
+# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A863D2D6
+# sudo apt-get update && sudo apt-get install python3-kivy

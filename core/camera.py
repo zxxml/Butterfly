@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+from cv2 import IMWRITE_JPEG_QUALITY as JPEG_QUALITY
 from cv2 import VideoCapture, flip, imencode
 from cv2 import error as cv2_error
 from dataclasses import dataclass
@@ -25,10 +26,10 @@ class Camera(BlackBox):
 
     def read(self):
         _, image = self.camera.read()
-        height, width = image.shape[0:2]
-        _, image = imencode('.jpg', image, (1, self.config.quality))
         image = flip(image, 0) if self.config.vertical_flip else image
         image = flip(image, 1) if self.config.horizontal_flip else image
+        height, width = image.shape[0:2]
+        _, image = imencode('.jpg', image, (JPEG_QUALITY, self.config.quality))
         return width, height, image
 
     @undead_curse(5, print, cv2_error)
