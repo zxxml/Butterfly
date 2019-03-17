@@ -1,17 +1,33 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import asyncio
-from asyncio import ensure_future
+from asyncio import ensure_future, gather
 from collections import defaultdict
 from http import HTTPStatus
+from ssl import SSLContext
 from urllib.parse import parse_qs, urlparse
 
-import websockets
-from websockets import ConnectionClosed
+from dataclasses import asdict, dataclass
+from websockets import ConnectionClosed, serve
 
-from config import ServerConfig, Status, Subtype
+from client import ClientConfig, Status, Subtype
 from ground import BlackBox, Queue
 from magic import async_new_game_plus
+
+
+@dataclass
+class ServerConfig:
+    host: str
+    port: int
+    passwd: str
+    ssl_context: SSLContext = None
+
+    def __post_init__(self):
+        self.host = str(self.host)
+        self.port = int(self.port)
+        self.passwd = str(self.passwd)
+
+    def to_client_config(self, status, subtype):
+        return ClientConfig(status=status, subtype=subtype, **asdict(self))
 
 
 class Server(BlackBox):
@@ -51,9 +67,9 @@ class Server(BlackBox):
             self.bridges[subtype][status] = socket
             self.queues[subtype][status] = Queue()
             try:
-                handle_recv_task = ensure_future(self.handle_recv_task(socket, status, subtype))
-                handle_send_task = ensure_future(self.handle_send_task(socket, status, subtype))
-                await asyncio.gather(handle_recv_task, handle_send_task)
+                recv_task = ensure_future(self.recv_task(socket, status, subtype))
+                send_task = ensure_future(self.send_task(socket, status, subtype))
+                await gather(recv_task, send_task)
             except ConnectionClosed:
                 self.bridges[subtype][status] = None
                 self.queues[subtype][status] = None
@@ -61,7 +77,7 @@ class Server(BlackBox):
         return _server_handler
 
     @async_new_game_plus
-    async def handle_recv_task(self, socket, status, subtype):
+    async def recv_task(self, socket, status, subtype):
         msg = await socket.recv()
         opposite_status = str(-Status(status))
         opposite_queue = self.queues[subtype][opposite_status]
@@ -69,7 +85,7 @@ class Server(BlackBox):
             return None
         await opposite_queue.async_put(msg)
 
-    async def handle_send_task(self, socket, status, subtype):
+    async def send_task(self, socket, status, subtype):
         queue = self.queues[subtype][status]
         while True:
             item = await queue.async_get()
@@ -81,10 +97,12 @@ class Server(BlackBox):
         kwargs.setdefault('ssl', self.config.ssl_context)
         kwargs.setdefault('loop', self.loop)
         kwargs.setdefault('process_request', self.process_request())
-        start_server = websockets.serve(self.server_handler(), **kwargs)
+        start_server = serve(self.server_handler(), **kwargs)
         self.loop.run_until_complete(start_server)
         self.loop.run_forever()
 
-    def run(self):
-        super().run()
-        self.mainloop()
+
+if __name__ == '__main__':
+    test_config = ServerConfig('localhost', 8080, '123456')
+    test_server = Server(test_config)
+    test_server.start()
