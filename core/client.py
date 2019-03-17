@@ -19,7 +19,6 @@ class Client(BlackBox):
     @async_new_game_plus
     async def handle_recv_task(self, socket):
         item = await socket.recv()
-        print(item)
         await self.recv_queue.async_put(item)
 
     @async_new_game_plus

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import enum
-from asyncio import BaseEventLoop, new_event_loop
+from asyncio import AbstractEventLoop, new_event_loop
 from threading import Thread
 from typing import Union
 
@@ -36,7 +36,7 @@ class BlackBox(Thread):
         self.max_size = max_size
         self.recv_queue: Union[Queue, None] = None
         self.send_queue: Union[Queue, None] = None
-        self.loop: Union[BaseEventLoop, None] = None
+        self.loop: Union[AbstractEventLoop, None] = None
 
     def run(self):
         self.loop = new_event_loop()
@@ -45,18 +45,20 @@ class BlackBox(Thread):
 
 
 class EnumMeta(enum.EnumMeta):
-    def __call__(cls, item, *args, **kwargs):
-        if isinstance(item, str) and item in cls:
-            return super().__call__(cls[item], *args, **kwargs)
-        return super().__call__(item, *args, **kwargs)
+    """将name与value同等对待的枚举元类。"""
 
-    def __contains__(cls, item):
-        if isinstance(item, cls):
-            return item._name_ in cls._member_map_
-        elif isinstance(item, str):
-            return item in cls._member_map_
+    def __call__(cls, value, *args, **kwargs):
+        if isinstance(value, str) and value in cls:
+            return super().__call__(cls[value], *args, **kwargs)
+        return super().__call__(value, *args, **kwargs)
+
+    def __contains__(cls, value):
+        if isinstance(value, cls):
+            return value._name_ in cls._member_map_
+        elif isinstance(value, str):
+            return value in cls._member_map_
         member_values = map(lambda x: x.value, cls._member_map_.values())
-        return item in member_values
+        return value in member_values
 
 
 class Enum(enum.Enum, metaclass=EnumMeta):
