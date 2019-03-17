@@ -51,8 +51,8 @@ class Packet:
 
     def pack(self):
         action = str(self.action)
-        stream = b64encode(self.value)
-        return json.dumps((action, self.detail, stream))
+        value = b64encode(self.value) if self.action.is_complex() else self.value
+        return json.dumps((action, self.detail, value))
 
     @staticmethod
     def unpack(packet):
