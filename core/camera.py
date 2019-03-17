@@ -25,11 +25,11 @@ class Camera(BlackBox):
         self.camera: VideoCapture = None
 
     def read(self):
-        _, image = self.camera.read()
+        _ret, image = self.camera.read()
         image = flip(image, 0) if self.config.vertical_flip else image
         image = flip(image, 1) if self.config.horizontal_flip else image
         height, width = image.shape[0:2]
-        _, image = imencode('.jpg', image, (JPEG_QUALITY, self.config.quality))
+        _ret, image = imencode('.jpg', image, (JPEG_QUALITY, self.config.quality))
         return width, height, image
 
     @undead_curse(5, print, cv2_error)
