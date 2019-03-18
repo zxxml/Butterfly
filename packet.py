@@ -7,7 +7,7 @@ from typing import Union
 
 from dataclasses import dataclass
 
-from ground import Enum
+from core.ground import Enum
 
 
 class Action(Enum):

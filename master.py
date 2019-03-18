@@ -12,10 +12,10 @@ from kivy.graphics.texture import Texture
 from kivy.lang import Builder
 from kivy.uix.widget import Widget
 
-from client import Client
-from magic import new_game_plus
+from core.client import Client
+from core.magic import new_game_plus
+from core.server import ServerConfig
 from packet import Packet
-from server import ServerConfig
 
 
 class MasterWidget(Widget):

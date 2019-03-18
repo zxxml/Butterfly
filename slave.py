@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 from threading import Thread
 
-from arduino import Serial, SerialConfig
-from camera import Camera, CameraConfig
-from client import Client
-from magic import new_game_plus
+from core.arduino import Serial, SerialConfig
+from core.camera import Camera, CameraConfig
+from core.client import Client
+from core.magic import new_game_plus
+from core.server import ServerConfig
 from packet import Packet
-from server import ServerConfig
 
 
 class Slave:

@@ -9,9 +9,9 @@ from urllib.parse import parse_qs, urlparse
 from dataclasses import asdict, dataclass
 from websockets import ConnectionClosed, serve
 
-from client import ClientConfig, Status, Subtype
-from ground import BlackBox, Queue
-from magic import async_new_game_plus
+from core.client import ClientConfig, Status, Subtype
+from core.ground import BlackBox, Queue
+from core.magic import async_new_game_plus
 
 
 @dataclass

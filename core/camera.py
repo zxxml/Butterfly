@@ -5,8 +5,8 @@ from cv2 import VideoCapture, flip, imencode
 from cv2 import error as cv2_error
 from dataclasses import dataclass
 
-from ground import BlackBox
-from magic import undead_curse
+from core.ground import BlackBox
+from core.magic import undead_curse
 
 
 @dataclass

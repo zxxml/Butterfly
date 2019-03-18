@@ -8,8 +8,8 @@ from typing import Union
 from dataclasses import asdict, dataclass
 from websockets import ConnectionClosed, connect
 
-from ground import BlackBox, Enum
-from magic import async_new_game_plus, async_undead_curse
+from core.ground import BlackBox, Enum
+from core.magic import async_new_game_plus, async_undead_curse
 
 
 class Status(Enum):

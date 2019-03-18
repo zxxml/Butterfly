@@ -5,8 +5,8 @@ from serial import Serial as _Serial
 from serial import SerialException
 from serial.tools.list_ports import comports
 
-from ground import BlackBox
-from magic import undead_curse
+from core.ground import BlackBox
+from core.magic import undead_curse
 
 
 @dataclass
