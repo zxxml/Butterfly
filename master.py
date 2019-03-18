@@ -24,6 +24,7 @@ class MasterWidget(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.enable_minigun = False
         self.recv_queue = App.get_running_app().video_client.recv_queue
         self.send_queue = App.get_running_app().normal_client.send_queue
         Thread(target=self.handle_video, daemon=True).start()
@@ -46,13 +47,22 @@ class MasterWidget(Widget):
         texture.blit_buffer(image.tobytes(), colorfmt='bgr')
         self.ids.video.texture = texture
 
+    def send_packet(self, action, detail, value):
+        packet = Packet(action, detail, value)
+        self.send_queue.put(packet.pack())
+
     def on_joy_axis(self, _win, _stick_id, axis_id, value):
-        action = {0: 'vehicle', 1: 'vehicle', 3: 'camera', 4: 'camera'}[axis_id]
-        detail = {0: 'vertical', 1: 'horizontal', 3: 'vertical', 4: 'horizontal'}[axis_id]
+        action_id = {0: 0, 1: 0, 3: 3, 4: 3, 2: 2, 5: 2}[axis_id]
+        detail_id = {0: 0, 1: 1, 3: 0, 4: 1, 2: 2, 5: 2}[axis_id]
+        action = {0: 'vehicle', 3: 'camera', 2: 'minigun'}[action_id]
+        detail = {0: 'vertical', 1: 'horizontal', 2: 'fire'}[detail_id]
+        action = 'minigun' if self.enable_minigun and action == 'vehicle' else action
         self.send_packet(action, detail, value)
 
     def on_joy_button_down(self, _win, _stick_id, button_id):
-        if button_id == 2:
+        if button_id == 0:
+            self.enable_minigun = True
+        elif button_id == 2:
             now = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
             self.ids.video.export_to_png('{0}.png'.format(now))
         elif button_id == 3:
@@ -62,11 +72,8 @@ class MasterWidget(Widget):
             self.send_packet('camera', 'horizontal', 0)
 
     def on_joy_button_up(self, _win, _stick_id, button_id):
-        pass
-
-    def send_packet(self, action, detail, value):
-        packet = Packet(action, detail, value)
-        self.send_queue.put(packet.pack())
+        if button_id == 0:
+            self.enable_minigun = False
 
 
 class Master(App):

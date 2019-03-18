@@ -31,6 +31,12 @@ class Packet:
     当需要打包一个分组时，可以直接使用它的pack()方法；
     当需要解包一个分组时，可以使用报文的unpack(packet)方法；
     当需要解包一个分组的detail时，可以直接使用它的unpack_detail()方法。
+    分组的具体内容如下所示：
+    视频传输分组：video <width>x<height> <视频帧>
+    音频传输分组：audio <sample_rate>x<channel_num> <音频帧>
+    载具控制分组：vehicle vertical/horizontal <速度>
+    摄像头控制分组：camera vertical/horizontal <速度>
+    水弹枪控制分组：minigun vertical/horizontal/fire <速度>
     """
     action: Union[Action, str]
     detail: str
