@@ -24,7 +24,7 @@ class Slave:
     def handle_normal(self):
         packet = self.normal_client.recv_queue.get()
         packet = Packet.unpack(packet)
-        self.serial.recv_queue.put(packet)
+        self.serial.recv_queue.put(repr(packet))
 
     @new_game_plus
     def handle_video(self):
