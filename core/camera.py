@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-from cv2 import IMWRITE_JPEG_QUALITY as JPEG_QUALITY
-from cv2 import VideoCapture, flip, imencode
-from cv2 import error as cv2_error
+from cv2 import IMWRITE_JPEG_QUALITY as JPEG_QUALITY, VideoCapture, error as cv2_error, flip, imencode
 from dataclasses import dataclass
 
 from core.ground import BlackBox

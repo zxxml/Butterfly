@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 from asyncio import ensure_future, gather
-from enum import auto
+from enum import auto as enum_auto
 from ssl import SSLContext
 from typing import Union
 
@@ -13,8 +13,11 @@ from core.magic import async_new_game_plus, async_undead_curse
 
 
 class Status(Enum):
-    master = 0
-    slave = auto()
+    """客户端的地位是服务器决定分组的转发目标的关键。
+    它只有两种选项：master和slave，对任一地位取反可以获得另一地位。
+    """
+    master = enum_auto()
+    slave = enum_auto()
 
     def __neg__(self):
         is_master = (self == Status.master)
@@ -22,9 +25,12 @@ class Status(Enum):
 
 
 class Subtype(Enum):
-    normal = 0
-    video = auto()
-    audio = auto()
+    """客户端的子类型是服务器决定分组的转发目标的关键。
+    它有三种选项：normal、video和audio。
+    """
+    normal = enum_auto()
+    video = enum_auto()
+    audio = enum_auto()
 
 
 @dataclass

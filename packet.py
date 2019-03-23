@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import ujson as json
 from base64 import b64decode, b64encode
-from enum import auto
+from enum import auto as enum_auto
 from typing import Union
+from ujson import dumps as ujson_dumps
+from ujson import loads as ujson_loads
 
 from dataclasses import dataclass
 
@@ -11,11 +12,11 @@ from core.ground import Enum
 
 
 class Action(Enum):
-    video = 0
-    audio = auto()
-    vehicle = auto()
-    camera = auto()
-    minigun = auto()
+    video = enum_auto()
+    audio = enum_auto()
+    vehicle = enum_auto()
+    camera = enum_auto()
+    minigun = enum_auto()
 
     def is_complex(self):
         return self in ('video', 'audio')
@@ -58,11 +59,11 @@ class Packet:
     def pack(self):
         action = str(self.action)
         value = b64encode(self.value) if self.action.is_complex() else self.value
-        return json.dumps((action, self.detail, value))
+        return ujson_dumps((action, self.detail, value))
 
     @staticmethod
     def unpack(packet):
-        action, detail, value = json.loads(packet)
+        action, detail, value = ujson_loads(packet)
         value = b64decode(value) if Action(action).is_complex() else value
         return Packet(action, detail, value)
 

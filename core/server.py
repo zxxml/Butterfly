@@ -7,8 +7,8 @@ from ssl import SSLContext
 from urllib.parse import parse_qs, urlparse
 
 from dataclasses import asdict, dataclass
-from websockets import ConnectionClosed, serve
-
+from websockets import ConnectionClosed, serve as websockets_serve
+ 
 from core.client import ClientConfig, Status, Subtype
 from core.ground import BlackBox, Queue
 from core.magic import async_new_game_plus
@@ -97,7 +97,7 @@ class Server(BlackBox):
         kwargs.setdefault('ssl', self.config.ssl_context)
         kwargs.setdefault('loop', self.loop)
         kwargs.setdefault('process_request', self.process_request())
-        start_server = serve(self.server_handler(), **kwargs)
+        start_server = websockets_serve(self.server_handler(), **kwargs)
         self.loop.run_until_complete(start_server)
         self.loop.run_forever()
 

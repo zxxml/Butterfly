@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 from dataclasses import dataclass
-from serial import Serial as _Serial
-from serial import SerialException
+from serial import Serial as serial_Serial, SerialException
 from serial.tools.list_ports import comports
 
 from core.ground import BlackBox
@@ -16,6 +15,10 @@ class SerialConfig:
 
 
 class Serial(BlackBox):
+    """串口黑盒从recv_queue中获取数据，然后将它原样写入到串口中。
+    串口黑盒拥有自动检测端口的能力，在指定的端口不存在的情况下，它将使用检测到的第一个端口。
+    """
+
     def __init__(self, config: SerialConfig, **kwargs):
         super().__init__(**kwargs)
         self.port = config.port
@@ -31,7 +34,7 @@ class Serial(BlackBox):
     @undead_curse(5, print, FileNotFoundError, SerialException)
     def mainloop(self):
         port, baud_rate = self.detect_port(), self.detect_baud_rate()
-        with _Serial(port=port, baudrate=baud_rate) as serial:
+        with serial_Serial(port=port, baudrate=baud_rate) as serial:
             while True:
                 item = self.recv_queue.get()
                 serial.write(item)

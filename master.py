@@ -3,7 +3,6 @@
 from datetime import datetime
 from threading import Thread
 
-import numpy as np
 from cv2 import IMREAD_COLOR, imdecode
 from kivy.app import App
 from kivy.clock import mainthread
@@ -11,6 +10,8 @@ from kivy.core.window import Window
 from kivy.graphics.texture import Texture
 from kivy.lang import Builder
 from kivy.uix.widget import Widget
+from numpy import fromstring as np_fromstring
+from numpy import uint8 as np_uint8
 
 from core.client import Client
 from core.magic import new_game_plus
@@ -36,7 +37,7 @@ class MasterWidget(Widget):
     def handle_video(self):
         packet = self.recv_queue.get()
         packet = Packet.unpack(packet)
-        image = np.fromstring(packet.value, np.uint8)
+        image = np_fromstring(packet.value, np_uint8)
         image = imdecode(image, IMREAD_COLOR)
         self.update_image(packet.unpack_detail(), image)
 

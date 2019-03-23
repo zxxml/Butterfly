@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 from asyncio import new_event_loop
-from enum import Enum as _Enum
-from enum import EnumMeta as _EnumMeta
+from enum import Enum as enum_Enum
+from enum import EnumMeta as enum_EnumMeta
 from threading import Thread
 
-from janus import Queue as _Queue
+from janus import Queue as janus_Queue
 
 
-class Queue(_Queue):
+class Queue(janus_Queue):
     """可同时工作在协程和线程中的FIFO队列。"""
 
     def get(self, **kwargs):
@@ -26,12 +26,9 @@ class Queue(_Queue):
 
 class BlackBox(Thread):
     """黑盒是核心包对外提供服务的方式。
-    每个黑盒都是一个独立的线程（不考虑子线程），
-    并且在线程内部至少有一个事件循环（loop属性）；
-    黑盒拥有recv_queue和send_queue两个属性，
-    它们都是Queue类的对象，并被用作与外界交互的接口。
-    在不承担计算密集型工作的情况下，现代CPU中可以处理的线程数相当多，
-    因此不用考虑线程过多的问题。
+    每个黑盒都是一个独立的线程（不考虑子线程），并且在线程内部至少有一个事件循环（loop属性）；
+    黑盒拥有recv_queue和send_queue两个属性，它们都是Queue类的对象，并被用作与外界交互的接口。
+    在不承担计算密集型工作的情况下，现代CPU中可以处理的线程数相当多，因此不用考虑线程过多的问题。
     """
 
     def __init__(self, max_size=0, **kwargs):
@@ -48,7 +45,7 @@ class BlackBox(Thread):
         self.mainloop()
 
 
-class EnumMeta(_EnumMeta):
+class EnumMeta(enum_EnumMeta):
     """将name与value同等对待的枚举元类。"""
 
     def __call__(cls, value, *args, **kwargs):
@@ -65,7 +62,7 @@ class EnumMeta(_EnumMeta):
         return value in member_values
 
 
-class Enum(_Enum, metaclass=EnumMeta):
+class Enum(enum_Enum, metaclass=EnumMeta):
     """将name与value同等对待的枚举类。"""
 
     def __str__(self):
