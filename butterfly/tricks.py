@@ -22,7 +22,7 @@ def async_new_game_plus(func):
     return _async_new_game_plus
 
 
-def undead_curse(interval, callback, *exceptions):
+def undead_curse(intvl: float, callback, *exceptions):
     def _undead_curse(func):
         @functools.wraps(func)
         def __undead_curse(*args, **kwargs):
@@ -32,12 +32,12 @@ def undead_curse(interval, callback, *exceptions):
                 except exceptions as e:
                     callback(e)
                 finally:
-                    time.sleep(interval)
+                    time.sleep(intvl)
         return __undead_curse
     return _undead_curse
 
 
-def async_undead_curse(interval, callback, *exceptions):
+def async_undead_curse(intvl: float, callback, *exceptions):
     def _async_undead_curse(func):
         @functools.wraps(func)
         async def __async_undead_curse(*args, **kwargs):
@@ -47,7 +47,7 @@ def async_undead_curse(interval, callback, *exceptions):
                 except exceptions as e:
                     callback(e)
                 finally:
-                    time.sleep(interval)
+                    time.sleep(intvl)
         return __async_undead_curse
     return _async_undead_curse
 
