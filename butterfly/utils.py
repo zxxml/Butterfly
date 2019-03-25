@@ -32,7 +32,7 @@ class BlackBox(Thread):
     and recv results from another queue meanwhile.
     But there may be coroutines in this thread
     and they are the real executors for your tasks
-    which means they need to access to the two queues.
+    which means they need to access to the two send_qs.
     BlackBox could handle the conflict for this purpose.
     """
 

@@ -16,8 +16,8 @@ from butterfly import tricks
 @dataclass
 class Router:
     """Router is a router in application layer, transferring data.
-    A node connects the router with its own type and dest by websocket,
-    and the router will transfer its data to the dest node if it exists.
+    A node connects the router with its own type and peer by websocket,
+    and the router will transfer its data to the peer node if it exists.
     Router is not designed to work in sub-thread, please don't try it.
     """
     host: str
@@ -27,10 +27,10 @@ class Router:
 
     @staticmethod
     def get_url(host: str, port: int, type: str,
-                dest: str, ssl_ctx: ssl.SSLContext):
+                peer: str, ssl_ctx: ssl.SSLContext):
         proto = 'ws' if ssl_ctx is None else 'wss'
-        tmpl = '{}://{}:{}/?type={}&dest={}'
-        return tmpl.format(proto, host, port, type, dest)
+        tmpl = '{}://{}:{}/?type={}&peer={}'
+        return tmpl.format(proto, host, port, type, peer)
 
     @staticmethod
     def get_headers(passwd: str):
@@ -40,7 +40,7 @@ class Router:
         return {'passwd': passwd}
 
     def __post_init__(self):
-        self.queues = dict()
+        self.send_qs = dict()
 
     def mainloop(self):
         kwargs = {'host': self.host, 'port': self.port,
@@ -60,7 +60,7 @@ class Router:
             # reject if type is wrong
             # and return 403 status code
             type = self.get_type(path)
-            if type in self.queues:
+            if type in self.send_qs:
                 return HTTPStatus.FORBIDDEN, [], b''
 
         return _process_req
@@ -68,9 +68,9 @@ class Router:
     def server_handler(self):
         async def _server_handler(conn, path):
             type = self.get_type(path)
-            dest = self.get_dest(path)
-            self.queues[type] = asyncio.Queue()
-            recv_data = asyncio.ensure_future(self.recv_data(conn, dest))
+            peer = self.get_peer(path)
+            self.send_qs[type] = asyncio.Queue()
+            recv_data = asyncio.ensure_future(self.recv_data(conn, peer))
             send_data = asyncio.ensure_future(self.send_data(conn, type))
             try:
                 await asyncio.gather(recv_data, send_data)
@@ -82,19 +82,19 @@ class Router:
             finally:
                 # no matter succeed or failed
                 # clean up traces and return
-                del self.queues[type]
+                del self.send_qs[type]
 
         return _server_handler
 
     @tricks.async_new_game_plus
-    async def recv_data(self, conn, dest):
+    async def recv_data(self, conn, peer):
         data = await conn.recv()
-        if dest in self.queues:
-            await self.queues[dest].put(data)
+        if peer in self.send_qs:
+            await self.send_qs[peer].put(data)
 
     @tricks.async_new_game_plus
     async def send_data(self, conn, type):
-        data = await self.queues[type].get()
+        data = await self.send_qs[type].get()
         await conn.send(data)
 
     @staticmethod
@@ -111,11 +111,11 @@ class Router:
         return temp.get('type', [''])[0]
 
     @staticmethod
-    def get_dest(path: str):
-        # dest is '' if not given
+    def get_peer(path: str):
+        # peer is '' if not given
         query = parse.urlparse(path).query
         temp = parse.parse_qs(query)
-        return temp.get('dest', [''])[0]
+        return temp.get('peer', [''])[0]
 
 
 if __name__ == '__main__':

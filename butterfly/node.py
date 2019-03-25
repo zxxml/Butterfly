@@ -13,9 +13,9 @@ from butterfly.utils import BlackBox
 
 class Node(BlackBox):
     def __init__(self, host: str, port: int, passwd: str, type: str,
-                 dest: str, ssl_ctx: ssl.SSLContext = None, **kwargs):
+                 peer: str, ssl_ctx: ssl.SSLContext = None, **kwargs):
         super().__init__(**kwargs)
-        self.url = Router.get_url(host, port, type, dest, ssl_ctx)
+        self.url = Router.get_url(host, port, type, peer, ssl_ctx)
         self.headers = Router.get_headers(passwd)
         self.ssl_ctx = ssl_ctx
 
@@ -48,7 +48,7 @@ class Node(BlackBox):
 
 
 if __name__ == '__main__':
-    # specify the same type and dest
+    # specify the same type and peer
     # and you'll get a simple echo program
     node = Node('localhost', 8080, '123456', 'echo', 'echo')
     node.start()
