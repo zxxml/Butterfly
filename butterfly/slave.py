@@ -62,5 +62,5 @@ class Slave:
 
 
 if __name__ == '__main__':
-    slave = Slave('localhost', 8080, '123456', 800, 600, True, True, 60, 'COM4', 9600)
+    slave = Slave('localhost', 8080, '123456', 640, 480, True, True, 60, 'COM4', 9600)
     slave.mainloop()
