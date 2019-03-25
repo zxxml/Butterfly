@@ -56,8 +56,8 @@ class Slave:
     @tricks.new_game_plus
     def handle_body(self):
         data = self.body_node.recv_data()
-        act, det = ujson.loads(data)
-        temp = '{0} {1}\n'.format(act, det)
+        act, det, val = ujson.loads(data)
+        temp = '{0} {1} {2}\n'.format(act, det, val)
         self.body.recv_q.put(temp)
 
 
