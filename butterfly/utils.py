@@ -1,9 +1,12 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import asyncio
+import queue
 from threading import Thread
 
 import janus
+
+from butterfly import tricks
 
 
 class Queue(janus.Queue):
@@ -17,6 +20,14 @@ class Queue(janus.Queue):
 
     def put(self, item, **kwargs):
         self.sync_q.put(item, **kwargs)
+
+    @tricks.vow_of_silence(queue.Empty)
+    def get_anyway(self):
+        return self.sync_q.get_nowait()
+
+    @tricks.vow_of_silence(queue.Full)
+    def put_anyway(self, item):
+        self.sync_q.put_nowait(item)
 
     async def async_get(self):
         return await self.async_q.get()
