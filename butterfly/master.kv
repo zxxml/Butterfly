@@ -1,0 +1,14 @@
+#:kivy 1.10.1
+
+<MasterWin>
+    canvas:
+        Color:
+            rgb: (0, 0, 0, 1)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    Image:
+        id: video
+        size: self.parent.size
+        on_size: self.size = self.parent.size
+        allow_stretch: True
