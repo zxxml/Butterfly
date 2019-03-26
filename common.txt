@@ -1,0 +1,5 @@
+Click==7.0
+dataclasses==0.6
+janus==0.4.0
+ujson==1.35
+websockets==7.0

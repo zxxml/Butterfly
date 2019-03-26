@@ -1,0 +1,10 @@
+numpy==1.16.1
+opencv-python==4.0.0.21
+sounddevice==0.3.13
+
+Kivy==1.10.1
+Pygments==2.3.1
+docutils==0.14
+kivy.deps.glew==0.1.10
+kivy.deps.sdl2==0.1.18
+pypiwin32==223

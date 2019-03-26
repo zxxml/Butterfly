@@ -22,5 +22,5 @@ class Ear(BlackBox):
 
     @tricks.new_game_plus
     def mainloop(self, stream):
-        audio = stream.read(self.spl_rate // 10)
+        audio = stream.read(self.spl_rate // 10)[0]
         self.send_q.put(audio) if self.enable else ...

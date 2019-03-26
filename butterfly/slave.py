@@ -5,6 +5,7 @@ import ssl
 import ujson
 from threading import Thread
 
+import numpy as np
 from dataclasses import dataclass
 
 from butterfly import tricks
@@ -45,6 +46,17 @@ class Slave:
         eye_thread = Thread(target=self.handle_eye)
         body_thread = Thread(target=self.handle_body)
         mouth_thread = Thread(target=self.handle_mouth)
+        # make sure to close all threads
+        # after exiting the application
+        self.eye_node.setDaemon(True)
+        self.body_node.setDaemon(True)
+        self.mouth_node.setDaemon(True)
+        self.eye.setDaemon(True)
+        self.body.setDaemon(True)
+        self.mouth.setDaemon(True)
+        eye_thread.setDaemon(True)
+        body_thread.setDaemon(True)
+        mouth_thread.setDaemon(True)
         self.eye_node.start()
         self.body_node.start()
         self.mouth_node.start()
@@ -54,6 +66,7 @@ class Slave:
         eye_thread.start()
         body_thread.start()
         mouth_thread.start()
+        self.run()
 
     @tricks.new_game_plus
     def handle_eye(self):
@@ -69,7 +82,21 @@ class Slave:
         temp = '{0} {1} {2}\n'.format(act, det, val)
         self.body.recv_q.put(temp)
 
+    @tricks.new_game_plus
     def handle_mouth(self):
+        data = self.mouth_node.recv_data()
+        temp = base64.b64decode(data)
+        temp = np.fromstring(temp, np.float32)
+        # make sure the shape is correct
+        audio = temp.reshape((-1, self.ch_num))
+        self.mouth.recv_q.put(audio)
+
+    @staticmethod
+    @tricks.vow_of_silence(KeyboardInterrupt)
+    @tricks.new_game_plus
+    def run():
+        # since this is a multithreading program,
+        # need to wait for KeyboardInterrupt manually
         pass
 
 

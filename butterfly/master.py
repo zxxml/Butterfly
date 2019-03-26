@@ -34,13 +34,19 @@ class Master(App):
         self.ear = Ear(spl_rate, ch_num)
 
     def mainloop(self):
+        # create and start all threads
+        # modern computer is really powerful
+        # and it's ok to run so many thread
         eye_thread = Thread(target=self.handle_eye)
         sight_thread = Thread(target=self.handle_sight)
         ear_thread = Thread(target=self.handle_ear)
+        # make sure to close all threads
+        # after exiting the application
         self.eye_node.setDaemon(True)
         self.body_node.setDaemon(True)
         self.ear_node.setDaemon(True)
         self.sight.setDaemon(True)
+        self.ear.setDaemon(True)
         eye_thread.setDaemon(True)
         sight_thread.setDaemon(True)
         ear_thread.setDaemon(True)
@@ -48,13 +54,11 @@ class Master(App):
         self.body_node.start()
         self.ear_node.start()
         self.sight.start()
+        self.ear.start()
         eye_thread.start()
         sight_thread.start()
         ear_thread.start()
         self.run()
-
-    def build(self):
-        return self.window
 
     @tricks.new_game_plus
     def handle_eye(self):
@@ -72,10 +76,14 @@ class Master(App):
     def handle_sight(self):
         rects = self.sight.send_q.get()
 
+    @tricks.new_game_plus
     def handle_ear(self):
         audio = self.ear.send_q.get()
         data = base64.b64encode(audio.tobytes())
-        pass
+        self.ear_node.send_data(data)
+
+    def build(self):
+        return self.window
 
 
 class MasterWin(Widget):
@@ -96,6 +104,8 @@ class MasterWin(Widget):
         self.ids.img.texture = texture
 
     def on_joy_axis(self, _win, _stick_id, axis_id, val):
+        if axis_id not in (0, 1, 3, 4):
+            return None
         act = {0: 'mov', 1: 'mov', 3: 'obs', 4: 'obs'}[axis_id]
         det = {0: 'down', 1: 'right', 3: 'down', 4: 'right'}[axis_id]
         self.handle_body(act, det, val)

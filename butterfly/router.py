@@ -119,5 +119,5 @@ class Router:
 
 
 if __name__ == '__main__':
-    router = Router('localhost', 8080, '123456')
+    router = Router('0.0.0.0', 8080, '123456')
     router.mainloop()

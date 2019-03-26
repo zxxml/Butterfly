@@ -1,8 +1,5 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import base64
-
-import numpy as np
 import sounddevice as sd
 
 from butterfly import tricks
@@ -23,7 +20,7 @@ class Mouth(BlackBox):
 
     @tricks.new_game_plus
     def mainloop(self, stream):
-        data = self.recv_q.get()
-        temp = base64.b64decode(data)
-        audio = np.fromstring(temp, np.float32)
+        # simply recv the audio
+        # and write it to the stream
+        audio = self.recv_q.get()
         stream.write(audio)

@@ -1,0 +1,10 @@
+numpy==1.16.1
+pyserial==3.4
+
+# while using linux system
+# install python3-opencv instead
+opencv-python==4.0.0.21
+
+# while using linux system
+# install libffi-dev first
+sounddevice==0.3.13
