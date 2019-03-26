@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import queue
+import time
 from threading import Thread
 
 import janus
@@ -52,3 +53,8 @@ class BlackBox(Thread):
         self.loop = asyncio.new_event_loop()
         self.recv_q = Queue(maxsize=max_size, loop=self.loop)
         self.send_q = Queue(maxsize=max_size, loop=self.loop)
+
+    @staticmethod
+    @tricks.new_game_plus
+    def hang_by():
+        time.sleep(3600)

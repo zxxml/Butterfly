@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import base64
 import ujson
+from threading import Thread
 
 import requests
 from requests.exceptions import RequestException
@@ -17,17 +18,21 @@ class Sight(BlackBox):
     url = 'https://api-cn.faceplusplus.com/facepp/v3/detect'
 
     def __init__(self, api_key: str, api_sec: str, **kwargs):
-        # set buffer size to 2 so as to make sure that
+        # set limited buffer size so as to make sure that
         # every img sent successfully will be processed
         # however, sometimes you may failed sending it
         # use `recv_q.put_anyway()` to ignore this error
-        super().__init__(max_size=2, **kwargs)
+        super().__init__(max_size=10, **kwargs)
         self.payload = {'api_key': api_key, 'api_secret': api_sec}
 
-    @tricks.undead_curse(2, print, HTTPError, RequestException)
     def run(self):
-        self.mainloop()
+        for _ in range(10):
+            thread = Thread(target=self.mainloop)
+            thread.setDaemon(True)
+            thread.start()
+        self.hang_by()
 
+    @tricks.undead_curse(2, print, HTTPError, RequestException)
     @tricks.new_game_plus
     def mainloop(self):
         # get an img from `recv_q`
