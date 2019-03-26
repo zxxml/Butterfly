@@ -97,11 +97,11 @@ class Slave:
     @tricks.new_game_plus
     def run():
         # since this is a multithreading program,
-        # need to wait for KeyboardInterrupt manually
+        # need to wait for `KeyboardInterrupt` manually
         time.sleep(2)
 
 
 if __name__ == '__main__':
     slave = Slave('localhost', 8080, '123456', 640, 480,
-                  True, True, 60, 'COM4', 9600, 44100, 2)
+                  False, False, 60, 'COM4', 9600, 44100, 2)
     slave.mainloop()

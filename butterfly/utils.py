@@ -12,7 +12,7 @@ from butterfly import tricks
 class Queue(janus.Queue):
     """Queue can work in both threads and coroutines.
     However, it can only work in one event loop
-    which is asyncio.get_event_loop() by default.
+    which is `asyncio.get_event_loop()` by default.
     """
 
     def get(self, **kwargs):
@@ -43,7 +43,7 @@ class BlackBox(Thread):
     and recv results from another queue meanwhile.
     But there may be coroutines in this thread
     and they are the real executors for your tasks
-    which means they need to access to the two send_qs.
+    which means they need to access to the two queues.
     BlackBox could handle the conflict for this purpose.
     """
 

@@ -24,9 +24,9 @@ from butterfly.sight import Sight
 
 
 class Master(App):
-    def __init__(self, host: str, port: int, passwd: str, api_key: str,
-                 api_sec: str, spl_rate: int, ch_num: int,
-                 ssl_ctx: ssl.SSLContext = None, **kwargs):
+    def __init__(self, host: str, port: int, passwd: str,
+                 api_key: str, api_sec: str, spl_rate: int,
+                 ch_num: int, ssl_ctx: ssl.SSLContext = None, **kwargs):
         super().__init__(**kwargs)
         self.window = MasterWin(self)
         self.eye_node = Node(host, port, passwd, 'master_eye', 'slave_eye', ssl_ctx)
@@ -71,13 +71,13 @@ class Master(App):
         img = cv2.imdecode(img_jpg, cv2.IMREAD_COLOR)
         # update sight with JPEG encoded img
         # and update img with bitmap
-        self.sight.recv_q.put_anyway(img_jpg)
+        self.sight.recv_q.put_anyway((width, height, img_jpg))
         self.window.update_img(width, height, img)
 
     @tricks.new_game_plus
     def handle_sight(self):
-        rects = self.sight.send_q.get()
-        self.window.update_rects(rects)
+        width, height, rects = self.sight.send_q.get()
+        self.window.update_rects(width, height, rects)
 
     @tricks.new_game_plus
     def handle_ear(self):
@@ -97,7 +97,7 @@ class MasterWin(Widget):
         super().__init__(**kwargs)
         self.master = master
         self.rects = InstructionGroup()
-        self.canvas.add(self.rects)
+        self.ids.mask.canvas.add(self.rects)
         Window.bind(on_joy_axis=self.on_joy_axis)
         Window.bind(on_joy_button_down=self.on_joy_button_down)
         Window.bind(on_joy_button_up=self.on_joy_button_up)
@@ -106,14 +106,26 @@ class MasterWin(Widget):
     def update_img(self, width, height, img):
         texture = Texture.create(size=(width, height))
         texture.blit_buffer(img.tobytes())
+        texture.flip_vertical()
+        texture.flip_horizontal()
         self.ids.img.texture = texture
 
     @mainthread
-    def update_rects(self, rects):
+    def update_rects(self, width, height, rects):
         self.rects.clear()
+        # since the img may be scaled
+        # need to scale the mask as well
+        size = self.ids.img.size
+        self.ids.mask.x_scale = size[0] // width
+        self.ids.mask.y_scale = size[1] // height
         for each in rects:
+            # due to the img is flipped
+            # the mask need to be flipped too
+            left = size[0] - each[0]
+            top = size[1] - each[1]
+            temp = (left, top, -each[2], -each[3])
             # noinspection PyArgumentList
-            rect = Line(rectangle=each)
+            rect = Line(rectangle=temp)
             self.rects.add(rect)
 
     def on_joy_axis(self, _win, _stick_id, axis_id, val):

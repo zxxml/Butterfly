@@ -1,14 +1,31 @@
 #:kivy 1.10.1
 
+<Background@Button>
+  size:    self.parent.size
+  on_size: self.size = self.parent.size
+
+<ScalableCanvas@Button>
+  background_color: (0, 0, 0, 0)
+  x_scale: 1
+  y_scale: 1
+  canvas.before:
+    PushMatrix
+    Scale:
+      origin: self.size
+      x: self.x_scale
+      y: self.y_scale
+  canvas.after:
+    PopMatrix
+
 <MasterWin>
-    canvas:
-        Color:
-            rgb: (0, 0, 0, 1)
-        Rectangle:
-            size: self.size
-            pos: self.pos
-    Image:
-        id: img
-        size: self.parent.size
-        on_size: self.size = self.parent.size
-        allow_stretch: False
+  Background:
+    background_color: (0, 0, 0, 1)
+  Image:
+    id: img
+    size: self.parent.size
+    on_size: self.size = self.parent.size
+    allow_stretch: True
+  ScalableCanvas:
+    id: mask
+    size: self.parent.size
+    on_size: self.size = self.parent.size
