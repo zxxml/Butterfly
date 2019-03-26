@@ -4,6 +4,8 @@ import base64
 import ujson
 
 import requests
+from requests.exceptions import RequestException
+from urllib3.exceptions import HTTPError
 
 from butterfly import tricks
 from butterfly.utils import BlackBox
@@ -18,6 +20,7 @@ class Sight(BlackBox):
         super().__init__(max_size=2, **kwargs)
         self.payload = {'api_key': api_key, 'api_secret': api_sec}
 
+    @tricks.undead_curse(2, print, HTTPError, RequestException)
     def run(self):
         self.mainloop()
 
@@ -31,8 +34,9 @@ class Sight(BlackBox):
         # and ask for detection
         payload = self.payload.copy()
         payload['image_base64'] = data
-        resp = requests.post(self.url, data=payload)
+        resp = requests.post(self.url, data=payload, timeout=2)
         result = ujson.loads(resp.content)
+        print(result)
         # do nothing if failed to detect
         # may check error_message instead
         if 'faces' not in result:

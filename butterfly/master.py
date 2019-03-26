@@ -12,6 +12,8 @@ from kivy.app import App
 from kivy.clock import mainthread
 from kivy.core.image import Texture
 from kivy.core.window import Window
+from kivy.graphics.instructions import InstructionGroup
+from kivy.graphics.vertex_instructions import Line
 from kivy.lang import Builder
 from kivy.uix.widget import Widget
 
@@ -75,6 +77,7 @@ class Master(App):
     @tricks.new_game_plus
     def handle_sight(self):
         rects = self.sight.send_q.get()
+        self.window.update_rects(rects)
 
     @tricks.new_game_plus
     def handle_ear(self):
@@ -93,22 +96,31 @@ class MasterWin(Widget):
     def __init__(self, master, **kwargs):
         super().__init__(**kwargs)
         self.master = master
+        self.rects = InstructionGroup()
+        self.canvas.add(self.rects)
         Window.bind(on_joy_axis=self.on_joy_axis)
         Window.bind(on_joy_button_down=self.on_joy_button_down)
         Window.bind(on_joy_button_up=self.on_joy_button_up)
 
     @mainthread
     def update_img(self, width, height, img):
-        texture = Texture.create(size=(width, height), colorfmt='bgr')
-        texture.blit_buffer(img.tobytes(), colorfmt='bgr')
+        texture = Texture.create(size=(width, height))
+        texture.blit_buffer(img.tobytes())
         self.ids.img.texture = texture
 
+    @mainthread
+    def update_rects(self, rects):
+        self.rects.clear()
+        for each in rects:
+            # noinspection PyArgumentList
+            rect = Line(rectangle=each)
+            self.rects.add(rect)
+
     def on_joy_axis(self, _win, _stick_id, axis_id, val):
-        if axis_id not in (0, 1, 3, 4):
-            return None
-        act = {0: 'mov', 1: 'mov', 3: 'obs', 4: 'obs'}[axis_id]
-        det = {0: 'down', 1: 'right', 3: 'down', 4: 'right'}[axis_id]
-        self.handle_body(act, det, val)
+        if axis_id in (0, 1, 3, 4):
+            act = {0: 'mov', 1: 'mov', 3: 'obs', 4: 'obs'}[axis_id]
+            det = {0: 'down', 1: 'right', 3: 'down', 4: 'right'}[axis_id]
+            self.handle_body(act, det, val)
 
     def on_joy_button_down(self, _win, _stick_id, btn_id):
         if btn_id == 1:
@@ -132,8 +144,8 @@ class MasterWin(Widget):
 
 
 if __name__ == '__main__':
-    api_key = 'bA20twdRcbtD0yjyUPhZzeopq4jmIOAH'
-    api_sec = '83kb7C4P7MAUBpH8SkX-idR5q2z_fiby'
+    api_key = '1eHYs2ND9Ott9qtUUwZmyTmjuu5us7GS'
+    api_sec = 'tOYYCi3wHnXe5cwQ6Qx3qLjAhEvxTsSH'
     master = Master('localhost', 8080, '123456',
                     api_key, api_sec, 44100, 2)
     master.mainloop()

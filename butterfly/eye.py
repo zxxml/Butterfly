@@ -33,6 +33,7 @@ class Eye(BlackBox):
 
     def read(self):
         ret, img = self.eye.read()
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if self.v_flip:
             img = cv2.flip(img, 0)
         if self.h_flip:

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import base64
 import ssl
+import time
 import ujson
 from threading import Thread
 
@@ -97,7 +98,7 @@ class Slave:
     def run():
         # since this is a multithreading program,
         # need to wait for KeyboardInterrupt manually
-        pass
+        time.sleep(2)
 
 
 if __name__ == '__main__':
