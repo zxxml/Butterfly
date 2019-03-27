@@ -113,28 +113,18 @@ class MasterWin(FloatLayout):
     @mainthread
     def update_rects(self, width, height, rects):
         self.rects.clear()
-        # since the img may be scaled
-        # need to scale the mask as well
         size = self.ids.img.size
-        scale = min(size[0] / width, size[1] / height)
-        print(scale)
-        # self.ids.mask.x_scale = scale
-        # self.ids.mask.y_scale = scale
-        self.ids.mask.size = (width * scale, height * scale)
-        # self.ids.mask.center = self.center
-        print(self.ids.mask.center, self.center, self.ids.mask.size, self.ids.mask.pos)
-        size = self.ids.mask.size
+        scale_x = size[0] / width
+        scale_y = size[1] / height
+        scale = min(scale_x, scale_y)
+        size = (width * scale, height * scale)
+        self.ids.mask.size = size
         pos = self.ids.mask.pos
         for each in rects:
-            # due to the img is flipped
-            # the mask need to be flipped too
-            each = [x for x in each]
-            print(each)
             each = [x * scale for x in each]
-            left = size[0] - each[0]
-            top = size[1] - each[1]
-            temp = (left + pos[0], top + pos[1], -each[2], -each[3])
-            print(each, temp)
+            left = size[0] - each[0] + pos[0]
+            top = size[1] - each[1] + pos[1]
+            temp = (left, top, -each[2], -each[3])
             # noinspection PyArgumentList
             rect = Line(rectangle=temp)
             self.rects.add(rect)

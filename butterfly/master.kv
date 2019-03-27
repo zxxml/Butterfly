@@ -3,18 +3,8 @@
 <Background@Button>
   size: self.parent.size
 
-<ScalableCanvas@Button>
+<MaskCanvas@Button>
   background_color: (0, 0, 0, 0)
-  x_scale: 1
-  y_scale: 1
-  canvas.before:
-    PushMatrix
-    Scale:
-      origin: self.size
-      x: self.x_scale
-      y: self.y_scale
-  canvas.after:
-    PopMatrix
 
 <MasterWin>
   Background:
@@ -23,9 +13,8 @@
     id:   img
     size: self.parent.size
     allow_stretch: True
-  ScalableCanvas:
+  MaskCanvas:
     id:        mask
-    center:    self.parent.center
     size:      self.parent.size
     size_hint: (None, None)
-    pos_hint: {'center_x': .5, 'center_y': .5}
+    pos_hint:  {'center_x': 0.5, 'center_y': 0.5}
