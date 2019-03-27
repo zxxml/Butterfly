@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import base64
 import ssl
+import time
 import ujson
 from threading import Thread
 
@@ -13,7 +14,6 @@ from butterfly.body import Body
 from butterfly.eye import Eye
 from butterfly.mouth import Mouth
 from butterfly.node import Node
-from butterfly.utils import BlackBox
 
 
 @dataclass
@@ -67,7 +67,7 @@ class Slave:
         eye_thread.start()
         body_thread.start()
         mouth_thread.start()
-        BlackBox.hang_by()
+        self.hang_by()
 
     @tricks.new_game_plus
     def handle_eye(self):
@@ -91,6 +91,12 @@ class Slave:
         # make sure the shape is correct
         audio = temp.reshape((-1, self.ch_num))
         self.mouth.recv_q.put(audio)
+
+    @staticmethod
+    @tricks.vow_of_silence(KeyboardInterrupt)
+    @tricks.new_game_plus
+    def hang_by():
+        time.sleep(3600)
 
 
 if __name__ == '__main__':
