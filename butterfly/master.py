@@ -15,7 +15,7 @@ from kivy.core.window import Window
 from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics.vertex_instructions import Line
 from kivy.lang import Builder
-from kivy.uix.widget import Widget
+from kivy.uix.floatlayout import FloatLayout
 
 from butterfly import tricks
 from butterfly.ear import Ear
@@ -89,7 +89,7 @@ class Master(App):
         return self.window
 
 
-class MasterWin(Widget):
+class MasterWin(FloatLayout):
     Builder.load_file('master.kv')
     Window.size = (640, 480)
 
@@ -116,14 +116,25 @@ class MasterWin(Widget):
         # since the img may be scaled
         # need to scale the mask as well
         size = self.ids.img.size
-        self.ids.mask.x_scale = size[0] // width
-        self.ids.mask.y_scale = size[1] // height
+        scale = min(size[0] / width, size[1] / height)
+        print(scale)
+        # self.ids.mask.x_scale = scale
+        # self.ids.mask.y_scale = scale
+        self.ids.mask.size = (width * scale, height * scale)
+        # self.ids.mask.center = self.center
+        print(self.ids.mask.center, self.center, self.ids.mask.size, self.ids.mask.pos)
+        size = self.ids.mask.size
+        pos = self.ids.mask.pos
         for each in rects:
             # due to the img is flipped
             # the mask need to be flipped too
+            each = [x for x in each]
+            print(each)
+            each = [x * scale for x in each]
             left = size[0] - each[0]
             top = size[1] - each[1]
-            temp = (left, top, -each[2], -each[3])
+            temp = (left + pos[0], top + pos[1], -each[2], -each[3])
+            print(each, temp)
             # noinspection PyArgumentList
             rect = Line(rectangle=temp)
             self.rects.add(rect)
@@ -156,8 +167,8 @@ class MasterWin(Widget):
 
 
 if __name__ == '__main__':
-    api_key = '1eHYs2ND9Ott9qtUUwZmyTmjuu5us7GS'
-    api_sec = 'tOYYCi3wHnXe5cwQ6Qx3qLjAhEvxTsSH'
+    api_key = 'bA20twdRcbtD0yjyUPhZzeopq4jmIOAH'
+    api_sec = '83kb7C4P7MAUBpH8SkX-idR5q2z_fiby'
     master = Master('localhost', 8080, '123456',
                     api_key, api_sec, 44100, 2)
     master.mainloop()

@@ -1,8 +1,7 @@
 #:kivy 1.10.1
 
 <Background@Button>
-  size:    self.parent.size
-  on_size: self.size = self.parent.size
+  size: self.parent.size
 
 <ScalableCanvas@Button>
   background_color: (0, 0, 0, 0)
@@ -21,11 +20,12 @@
   Background:
     background_color: (0, 0, 0, 1)
   Image:
-    id: img
+    id:   img
     size: self.parent.size
-    on_size: self.size = self.parent.size
     allow_stretch: True
   ScalableCanvas:
-    id: mask
-    size: self.parent.size
-    on_size: self.size = self.parent.size
+    id:        mask
+    center:    self.parent.center
+    size:      self.parent.size
+    size_hint: (None, None)
+    pos_hint: {'center_x': .5, 'center_y': .5}
