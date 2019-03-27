@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import ssl
+import time
 from http import HTTPStatus
 from urllib import parse
 
@@ -34,10 +35,9 @@ class Router:
 
     @staticmethod
     def get_headers(passwd: str):
-        # passwd may be really long
-        # so that url cannot contain it
-        # put it in headers is a better way
-        return {'passwd': passwd}
+        # passwd may be too long for the url to contain it
+        # for this purpose put it in headers is a better way
+        return {'passwd': passwd, 'salt': time.time()}
 
     def __post_init__(self):
         self.send_qs = dict()
