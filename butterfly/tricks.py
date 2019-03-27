@@ -1,24 +1,31 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # disable automatic formatter
+import asyncio
 import functools
 import time
 from contextlib import suppress
 
 
-def new_game_plus(func):
+def new_game_plus(func=None, intvl=0):
+    if func is None:
+        return functools.partial(new_game_plus, intvl=intvl)
     @functools.wraps(func)
     def _new_game_plus(*args, **kwargs):
         while True:
             func(*args, **kwargs)
+            time.sleep(intvl) if intvl > 0 else ...
     return _new_game_plus
 
 
-def async_new_game_plus(func):
+def async_new_game_plus(func=None, intvl=0):
+    if func is None:
+        return functools.partial(async_new_game_plus, intvl=intvl)
     @functools.wraps(func)
     async def _async_new_game_plus(*args, **kwargs):
         while True:
             await func(*args, **kwargs)
+            await asyncio.sleep(intvl) if intvl > 0 else ...
     return _async_new_game_plus
 
 

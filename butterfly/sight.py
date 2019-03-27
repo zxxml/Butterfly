@@ -33,7 +33,7 @@ class Sight(BlackBox):
         self.hang_by()
 
     @tricks.undead_curse(2, print, HTTPError, RequestException)
-    @tricks.new_game_plus
+    @tricks.new_game_plus(intvl=1 / 10)
     def mainloop(self):
         # get an img from `recv_q`
         # and encode it in base64
