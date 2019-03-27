@@ -22,18 +22,18 @@ class Sight(BlackBox):
         # every img sent successfully will be processed
         # however, sometimes you may failed to send
         # use `recv_q.put_anyway()` to ignore this error
-        super().__init__(max_size=10, **kwargs)
+        super().__init__(max_size=2, **kwargs)
         self.payload = {'api_key': api_key, 'api_secret': api_sec}
 
     def run(self):
-        for _ in range(10):
+        for _ in range(2):
             thread = Thread(target=self.mainloop)
             thread.setDaemon(True)
             thread.start()
         self.hang_by()
 
     @tricks.undead_curse(2, print, HTTPError, RequestException)
-    @tricks.new_game_plus(intvl=1 / 10)
+    @tricks.new_game_plus(intvl=1 / 2)
     def mainloop(self):
         # get an img from `recv_q`
         # and encode it in base64
@@ -47,7 +47,7 @@ class Sight(BlackBox):
         result = ujson.loads(resp.content)
         # do nothing if failed to detect
         # may check `error_message` instead
-        if 'faces' in result:
+        if 'faces' not in result:
             return None
         # extract faces from result
         # and convert dict to tuple
